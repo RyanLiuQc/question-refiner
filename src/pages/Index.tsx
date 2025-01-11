@@ -1,101 +1,70 @@
-import { useState, useRef, useEffect } from "react";
-import { Message, getChatResponse } from "@/lib/utils";
-import { ChatMessage } from "@/components/ChatMessage";
-import { ChatInput } from "@/components/ChatInput";
-import { TypingIndicator } from "@/components/TypingIndicator";
-import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { MessageCircle, Info, HelpCircle, Users, Trophy } from "lucide-react";
 
-const INITIAL_MESSAGE: Message = {
-  role: "system",
-  content: `If question seems to be asking for definition
-Then answer with definition
 
-If question seem to consist of multiple questions
-Then split the questions and ask user for specific questions that wants to be asked
+const Index = () => {
 
-If the question consists of multiple parts, 
-then ask a context specific question to the user for them to specify what they want to know
 
-If question is too broad, general, or too philosophic
-Then ask for specifications about the subject 
+  const navigate = useNavigate();
 
-If question is objective, easily answered, non opinionated
-Then reformulate the question to reword it to fit the mentor
-
-If question is non specific for a mentor of their specific job, non job experience related
-Then discard question, question should not be asked
-
-If question is in FAQ section
-Then give the answer directly from FAQ
-
-Else user is eligible to ask this question to mentor
-Let user know that their question was sent to the mentor
-
-at the end suggest a better way to formulate the question`
-};
-
-export default function Index() {
-  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
-  const [isLoading, setIsLoading] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
-
-  const scrollToBottom = () => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const handleNavigation = (tab: string) => {
+    navigate(tab, { state: { activeTab: tab } });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
-  const handleSendMessage = async (content: string) => {
-    const userMessage: Message = { role: "user", content };
-    setMessages(prev => [...prev, userMessage]);
-    setIsLoading(true);
-
-    try {
-      const newMessages = [...messages, userMessage];
-      const response = await getChatResponse(newMessages);
-      
-      if (response) {
-        const assistantMessage: Message = {
-          role: "assistant",
-          content: response
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-      }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to get response from AI. Please try again."
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
-    <div className="flex flex-col h-screen max-w-4xl mx-auto">
-      <header className="flex items-center justify-between p-4 border-b">
-        <h1 className="text-xl font-semibold">AI Question Gatekeeper</h1>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-200">
+      <div className="container mx-auto px-4">
+        {/* Header with Sign In/Up */}
+        <header className="py-4 flex justify-between items-center">
+          <div></div>
+          <div className="space-x-4">
+            <Button variant="outline" onClick={() => navigate('/sign-in')}>Sign In</Button>
+            <Button onClick={() => navigate('/sign-up')}>Sign Up</Button>
+          </div>
+        </header>
 
-      <main className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-4">
-          {messages.slice(1).map((message, index) => (
-            <ChatMessage key={index} message={message} />
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <TypingIndicator />
-            </div>
-          )}
-          <div ref={chatEndRef} />
-        </div>
-      </main>
+        {/* Main Content */}
+        <main className="flex flex-col items-center justify-center min-h-[80vh] space-y-8">
+          <h1 
+            className="text-4xl font-bold cursor-pointer hover:text-green-700 transition-colors"
+            onClick={() => navigate('/')}
+          >
+            Gatekeeper
+          </h1>
+          <p className="text-xl italic text-muted-foreground">
+            We help you to have better professional connections.
+          </p>
 
-      <ChatInput onSend={handleSendMessage} disabled={isLoading} />
+          {/* Navigation Buttons */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-2xl">
+            <Button onClick={() => handleNavigation('chat')} className="flex items-center gap-2">
+              <MessageCircle className="w-4 h-4" />
+              Chat
+            </Button>
+            <Button onClick={() => handleNavigation('faq')} className="flex items-center gap-2">
+              <Info className="w-4 h-4" />
+              FAQ
+            </Button>
+            <Button onClick={() => handleNavigation('tips')} className="flex items-center gap-2">
+              <HelpCircle className="w-4 h-4" />
+              Tips
+            </Button>
+            <Button onClick={() => handleNavigation('mentors')} className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Mentors
+            </Button>
+            <Button onClick={() => handleNavigation('qom')} className="flex items-center gap-2">
+              <Trophy className="w-4 h-4" />
+              Questions of the Month
+            </Button>
+          </div>
+        </main>
+      </div>
     </div>
   );
-}
+};
+
+export default Index;

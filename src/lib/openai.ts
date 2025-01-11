@@ -7,7 +7,6 @@ interface Message {
 }
 
 const SYSTEM_PROMPT = `
-I want you to improve the quality of a student's questions asked below using these conditions:
 If question seems to be asking for definition
 Then answer with definition
 
@@ -30,9 +29,11 @@ If question is in FAQ section
 Then give the answer directly from FAQ
 
 Else user is eligible to ask this question to mentor
-Let user know that their question is well formulated and is sent to the mentor
+Let user know that their question was sent to the mentor
 
-at the end suggeest a better way to formulate the question and ask if the user wants to send the question anyway to their mentor`;
+at the end suggeest a better way to formulate the question
+
+The question is: `;
 
 export async function getOpenAIResponse(messages: Message[]): Promise<string> {
   try {
