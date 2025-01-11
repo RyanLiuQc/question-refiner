@@ -19,7 +19,7 @@ export async function getChatResponse(messages: Message[]): Promise<string> {
         'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: messages.map(msg => ({
           role: msg.role,
           content: msg.content
@@ -28,7 +28,9 @@ export async function getChatResponse(messages: Message[]): Promise<string> {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to get response from AI');
+      const errorData = await response.json();
+      console.error('OpenAI API Error:', errorData);
+      throw new Error(`Failed to get response from AI: ${errorData.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
