@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Message {
   role: "system" | "user" | "assistant";
@@ -33,14 +34,22 @@ at the end suggeest a better way to formulate the question`;
 
 export async function getOpenAIResponse(messages: Message[]): Promise<string> {
   try {
+    const { data: { OPENAI_API_KEY } } = await supabase.functions.invoke('get-secret', {
+      body: { secretName: 'OPENAI_API_KEY' }
+    });
+
+    if (!OPENAI_API_KEY) {
+      throw new Error('OpenAI API key not found');
+    }
+
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           ...messages,
@@ -49,7 +58,9 @@ export async function getOpenAIResponse(messages: Message[]): Promise<string> {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to get response from OpenAI");
+      const errorData = await response.json();
+      console.error('OpenAI API Error:', errorData);
+      throw new Error(`Failed to get response from AI: ${errorData.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();

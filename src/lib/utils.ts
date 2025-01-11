@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { supabase } from "@/integrations/supabase/client";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -12,11 +13,19 @@ export type Message = {
 
 export async function getChatResponse(messages: Message[]): Promise<string> {
   try {
+    const { data: { OPENAI_API_KEY } } = await supabase.functions.invoke('get-secret', {
+      body: { secretName: 'OPENAI_API_KEY' }
+    });
+
+    if (!OPENAI_API_KEY) {
+      throw new Error('OpenAI API key not found');
+    }
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
