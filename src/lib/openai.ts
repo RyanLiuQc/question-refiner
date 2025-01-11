@@ -30,7 +30,7 @@ Then give the answer directly from FAQ
 Else user is eligible to ask this question to mentor
 Let user know that their question was sent to the mentor
 
-at the end suggeest a better way to formulate the question`;
+at the end suggeest a better way to formulate the question, also ask if the user wants to send the question anyway`;
 
 export async function getOpenAIResponse(messages: Message[]): Promise<string> {
   try {
